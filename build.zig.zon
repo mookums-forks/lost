@@ -1,0 +1,13 @@
+.{
+    .name = "lost",
+    .version = "0.1.0",
+    .dependencies = .{},
+    .paths = .{
+        "README.md",
+        "COPYING",
+        "src",
+        "build.zig",
+        "build.zig.zon",
+    },
+}
+

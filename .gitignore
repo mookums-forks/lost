@@ -114,3 +114,10 @@ pyramid-incorrect.dat
 
 # Nix
 result
+
+# clangd
+.cache
+
+# Zig
+.zig-cache
+zig-out
