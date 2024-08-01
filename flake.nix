@@ -40,6 +40,11 @@
             eigen
             cairo
           ];
+
+          shellHook = ''
+            # Won't find libasan without this.
+            export ZIG_LIBASAN_PATH="${pkgs.gcc.cc.lib}/lib"
+          '';
         };
 
         devShell = self.devShells.${system}.default;
