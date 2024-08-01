@@ -14,6 +14,7 @@ const src = &.{
 
 pub fn build(b: *std.Build) !void {
     const float_mode = b.option(bool, "float", "Enables Float Mode (default: false)") orelse false;
+    const sanitize = b.option(bool, "sanitize", "Enables Address Sanitzer (default: true)") orelse true;
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -32,24 +33,41 @@ pub fn build(b: *std.Build) !void {
     exe.addIncludePath(b.path("vendor/"));
     exe.addIncludePath(b.path("documentation/"));
 
+    var flags = std.ArrayList([]const u8).init(b.allocator);
+    defer flags.deinit();
+
+    // Base Flags
+    try flags.append("-Wall");
+    try flags.append("-Wextra");
+    try flags.append("-Wno-missing-field-initalizers");
+    try flags.append("-pedantic");
+    try flags.append("--std=c++11");
+
+    if (float_mode) {
+        exe.root_module.addCMacro("LOST_FLOAT_MODE", "1");
+        try flags.append("-Wdouble-promotion");
+        // This is not happy when build with Zig/Clang. Claims a lot more
+        // than GCC ever did.
+        //try flags.append("-Werror=double-promotion");
+    }
+
+    if (sanitize) {
+        const envs = try std.process.getEnvMap(b.allocator);
+        if (envs.get("ZIG_LIBASAN_PATH")) |path| {
+            // gcc -print-file-name=libasan.so
+            exe.addLibraryPath(.{ .cwd_relative = path });
+        }
+
+        exe.linkSystemLibrary("asan");
+        try flags.append("-fsanitize=address");
+    }
+
     exe.linkSystemLibrary("cairo");
 
     exe.addCSourceFiles(.{
         .files = src,
-        .flags = &.{
-            "-Wall",
-            "-Wextra",
-            "-Wno-missing-field-initializers",
-            "-pedantic",
-            "--std=c++11",
-            //"-fsanitize=address",
-        },
+        .flags = flags.items,
     });
-
-    // Enable Float Mode.
-    if (float_mode) {
-        exe.root_module.addCMacro("LOST_FLOAT_MODE", "1");
-    }
 
     // We need the man-*.h files to build the executable.
     exe.step.dependOn(generate_h_step);
