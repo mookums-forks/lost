@@ -18,8 +18,8 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const generate_txt_step = b.step("generate_txt", "Generate .txt files from .man files.");
-    const generate_h_step = b.step("generate_h", "Generate .h files from .man files.");
+    const generate_txt_step = b.step("generate_txt", "Generate .txt files from .man files");
+    const generate_h_step = b.step("generate_h", "Generate .h files from .man files");
 
     const exe = b.addExecutable(.{
         .name = "lost",
@@ -85,6 +85,11 @@ pub fn build(b: *std.Build) !void {
 
     const run_step = b.step("run", "Run Lost");
     run_step.dependOn(&run_cmd.step);
+
+    // Linting the source files.
+    const lint_cmd = b.addSystemCommand(&[_][]const u8{ "sh", "-c", "cpplint --recursive src test" });
+    const lint_step = b.step("lint", "Lint files with cpplint");
+    lint_step.dependOn(&lint_cmd.step);
 
     // Generating the man-*.h files.
     generate_h_step.dependOn(generate_txt_step);
