@@ -3,11 +3,11 @@
 tmp_dir=$(mktemp -d)
 
 # Generated image test
-./lost pipeline \
+./zig-out/bin/lost pipeline \
   --generate 1 \
   --plot-raw-input "$tmp_dir/raw-input.png" \
   --plot-input "$tmp_dir/input.png"
-./lost pipeline \
+./zig-out/bin/lost pipeline \
   --generate 1 \
   --generate-x-resolution 1024 \
   --generate-y-resolution 1024 \
@@ -24,7 +24,7 @@ tmp_dir=$(mktemp -d)
 # Real image test
 curl https://markasoftware.com/img_7660.png -o "$tmp_dir/img_7660.png"
 
-./lost database \
+./zig-out/bin/lost database \
   --max-stars 5000 \
   --kvector \
   --kvector-min-distance 0.2 \
@@ -34,7 +34,7 @@ curl https://markasoftware.com/img_7660.png -o "$tmp_dir/img_7660.png"
 
 set -x
 lost_output=$(
-  ./lost pipeline \
+  ./zig-out/bin/lost pipeline \
     --png "$tmp_dir/img_7660.png" \
     --focal-length 49 \
     --pixel-size 22.2 \
